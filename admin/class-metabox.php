@@ -805,41 +805,58 @@ if ( ! class_exists( 'WPSEO_Metabox' ) ) {
 				return;
 			}
 
-			if ( $column_name === 'wpseo-score' ) {
-				$score = self::get_value( 'linkdex', $post_id );
-				if ( self::get_value( 'meta-robots-noindex', $post_id ) === '1' ) {
-					$score_label = 'noindex';
-					$title       = __( 'Post is set to noindex.', 'wordpress-seo' );
-					self::set_value( 'linkdex', 0, $post_id );
-				} elseif ( $score !== '' ) {
-					$nr          = wpseo_calc( $score, '/', 10, true );
-					$score_label = wpseo_translate_score( $nr );
-					$title       = wpseo_translate_score( $nr, false );
-					unset( $nr );
-				} else {
-					$this->calculate_results( get_post( $post_id ) );
-					$score = self::get_value( 'linkdex', $post_id );
-					if ( $score === '' ) {
-						$score_label = 'na';
-						$title       = __( 'Focus keyword not set.', 'wordpress-seo' );
-					} else {
-						$score_label = wpseo_translate_score( $score );
-						$title       = wpseo_translate_score( $score, false );
-					}
-				}
+			switch ($column_name) {
+				case 'wpseo-score':
+					$score = get_seo_score( $post_id );
+					echo '<div title="' . esc_attr( $score['title'] ) . '" class="wpseo-score-icon ' . esc_attr( $score['label'] ) . '"></div>';
+					break;
+				case 'wpseo-title':
+					echo esc_html( apply_filters( 'wpseo_title', wpseo_replace_vars( $this->page_title( $post_id ), get_post( $post_id, ARRAY_A ) ) ) );
+					break;
+				case 'wpseo-metadesc':
+					echo esc_html( apply_filters( 'wpseo_metadesc', wpseo_replace_vars( self::get_value( 'metadesc', $post_id ), get_post( $post_id, ARRAY_A ) ) ) );
+					break;
+				case 'wpseo-focuskw':
+					$focuskw = self::get_value( 'focuskw', $post_id );
+					echo esc_html( $focuskw );
+					break;				
+			}
+		}
 
-				echo '<div title="' . esc_attr( $title ) . '" class="wpseo-score-icon ' . esc_attr( $score_label ) . '"></div>';
+		/**
+		 * Calculates the seo score for column_content
+		 * @param  int $post_id
+		 * @return array containing the score_label and the title
+		 */
+		public function get_seo_score( $post_id ) {
+			$score = self::get_value( 'linkdex', $post_id );
+			
+			// remove score from post if set to noindex
+			if ( self::get_value( 'meta-robots-noindex', $post_id ) === '1' ) {
+				$label 		= 'noindex';
+				$title      = __( 'Post is set to noindex.', 'wordpress-seo' );
+				self::set_value( 'linkdex', 0, $post_id );
+			} 
+			
+			// Try to calculate score if score is empty
+			if ( $score === '' ) {
+				$this->calculate_results( get_post( $post_id ) );
 			}
-			if ( $column_name === 'wpseo-title' ) {
-				echo esc_html( apply_filters( 'wpseo_title', wpseo_replace_vars( $this->page_title( $post_id ), get_post( $post_id, ARRAY_A ) ) ) );
+			
+			if ( $score === '' ) {
+				$label 		= 'na';
+				$title      = __( 'Focus keyword not set.', 'wordpress-seo' );
+			} 
+			else {
+				$nr         = wpseo_calc( $score, '/', 10, true );
+				$label 		= wpseo_translate_score( $score );
+				$title      = wpseo_translate_score( $score, false );
+				unset( $nr );
 			}
-			if ( $column_name === 'wpseo-metadesc' ) {
-				echo esc_html( apply_filters( 'wpseo_metadesc', wpseo_replace_vars( self::get_value( 'metadesc', $post_id ), get_post( $post_id, ARRAY_A ) ) ) );
-			}
-			if ( $column_name === 'wpseo-focuskw' ) {
-				$focuskw = self::get_value( 'focuskw', $post_id );
-				echo esc_html( $focuskw );
-			}
+
+			return array(
+				'label' => $label, 'title' => $title
+			);
 		}
 
 		/**
