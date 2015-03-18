@@ -32,6 +32,9 @@ module.exports = function(grunt) {
 				'frontend/**/*.php',
 				'inc/**/*.php'
 			],
+            classes: [
+                'admin/**/class-*.php',
+            ],
 			phptests: 'tests/**/*.php',
 			get config() {
 				return project.paths.config + '*.js';
@@ -53,7 +56,10 @@ module.exports = function(grunt) {
 				addtextdomain: 'grunt-wp-i18n',
 				makepot: 'grunt-wp-i18n',
 				glotpress_download: 'grunt-glotpress',
-				wpcss: 'grunt-wp-css'
+				wpcss: 'grunt-wp-css',
+                concat: 'grunt-contrib-concat',
+                file_append: 'grunt-file-append',
+                string_replace: 'grunt-string-replace'
 			}
 		}
 	});

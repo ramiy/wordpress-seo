@@ -4,6 +4,7 @@
 build:
   - 'build:css'
   - 'build:images'
+  - 'build:php'
   - 'build:js'
   - 'build:i18n'
 # Build CSS from SCSS to production
@@ -11,6 +12,11 @@ build:
   - 'autoprefixer'
   - 'wpcss'
   - 'cssmin'
+# Optimise PHPclassfiles
+'build:php':
+  - 'string_replace'
+  - 'concat'
+  - 'file_append'
 # Optimise images from source to production
 'build:images':
   - 'imagemin'
