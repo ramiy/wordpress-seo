@@ -34,6 +34,13 @@ class Yoast_Plugin_Conflict {
 	protected $active_plugins = array();
 
 	/**
+	 * Cached conflicts
+	 *
+	 * @var bool
+	 */
+	private $cached_conflicts_shown = false;
+
+	/**
 	 * Property for holding instance of itself
 	 *
 	 * @var Yoast_Plugin_Conflict
@@ -83,7 +90,6 @@ class Yoast_Plugin_Conflict {
 	 * @return bool
 	 */
 	public function check_for_conflicts( $plugin_section ) {
-
 		static $sections_checked;
 
 		if ( $sections_checked == null ) {
@@ -98,6 +104,25 @@ class Yoast_Plugin_Conflict {
 		}
 		else {
 			return false;
+		}
+	}
+
+	/**
+	 * Show the conflicts from transient cache
+	 */
+	protected function show_cached_conflicts() {
+		if( $this->cached_conflicts_shown !== false ){
+			return;
+		}
+
+		$this->cached_conflicts_shown = true;
+
+		$transient_conflicts = (array) get_transient( 'wpseo_conflicts', array() );
+
+		foreach ( $transient_conflicts as $conflict ) {
+			if ( ! empty( $conflict['readable'] ) ) {
+				$this->set_error( $conflict['section'], $conflict['readable'] );
+			}
 		}
 	}
 
@@ -133,6 +158,9 @@ class Yoast_Plugin_Conflict {
 		}
 
 		// Getting the active plugins by given section
+		if ( ! isset( $this->active_plugins[$plugin_section] ) ) {
+			return;
+		}
 		$plugins = $this->active_plugins[ $plugin_section ];
 
 		$plugin_names = array();
@@ -157,9 +185,36 @@ class Yoast_Plugin_Conflict {
 		foreach ( $plugin_sections as $plugin_section => $readable_plugin_section ) {
 			// Check for conflicting plugins and show error if there are conflicts
 			if ( $this->check_for_conflicts( $plugin_section ) ) {
-				$this->set_error( $plugin_section, $readable_plugin_section );
+				$this->register_plugin_conflict( $plugin_section, $readable_plugin_section  );
 			}
 		}
+	}
+
+	/**
+	 * Register a new plugin conflict, store it and show an error
+	 *
+	 * @param $plugin_section
+	 * @param $readable_plugin_section
+	 */
+	private function register_plugin_conflict( $plugin_section, $readable_plugin_section ) {
+		$transient_conflicts = array();
+//		$transient_conflicts = (array) get_transient( 'wpseo_conflicts', array() );
+
+		// Getting the active plugins by given section
+		$plugins = $this->active_plugins[ $plugin_section ];
+		foreach ( $plugins as $plugin ) {
+			if ( $name = $this->get_plugin_name( $plugin ) ) {
+				$transient_conflicts[$name] = array(
+					'section'  => $plugin_section,
+					'readable' => $readable_plugin_section,
+				);
+			}
+		}
+
+		// Update the transient with the new error
+		set_transient( 'wpseo_conflicts', $transient_conflicts, ( 60 * 60 * 24 ) );
+
+		$this->set_error( $plugin_section, $readable_plugin_section );
 	}
 
 	/**
@@ -169,8 +224,11 @@ class Yoast_Plugin_Conflict {
 	 * @param string $readable_plugin_section This is the value for the translation
 	 */
 	protected function set_error( $plugin_section, $readable_plugin_section ) {
-
 		$plugins_as_string = $this->get_conflicting_plugins_as_string( $plugin_section );
+		if ( ! isset( $this->active_plugins[$plugin_section] ) ) {
+			return;
+		}
+
 		$error_message     = '<h3>' . __( 'Warning!', 'wordpress-seo' ) . '</h3>';
 
 		/* translators: %s: 'Facebook & Open Graph' plugin name(s) of possibly conflicting plugin(s) */
@@ -180,6 +238,9 @@ class Yoast_Plugin_Conflict {
 
 		/* translators: %s: 'Facebook & Open Graph' plugin name(s) of possibly conflicting plugin(s) */
 		$error_message .= sprintf( __( 'We recommend you deactivate %s and have another look at your WordPress SEO configuration using the button above.', 'wordpress-seo' ), $plugins_as_string ) . '</p>';
+		if ( ! isset( $this->active_plugins[$plugin_section] ) ) {
+			return;
+		}
 		foreach ( $this->active_plugins[ $plugin_section ] as $plugin_file ) {
 
 			/* translators: %s: 'Facebook' plugin name of possibly conflicting plugin */
@@ -237,7 +298,6 @@ class Yoast_Plugin_Conflict {
 	 * @param string $plugin
 	 */
 	protected function add_active_plugin( $plugin_section, $plugin ) {
-
 		if ( ! array_key_exists( $plugin_section, $this->active_plugins ) ) {
 			$this->active_plugins[ $plugin_section ] = array();
 		}

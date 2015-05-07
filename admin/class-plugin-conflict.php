@@ -136,4 +136,14 @@ class WPSEO_Plugin_Conflict extends Yoast_Plugin_Conflict {
 		$instance->check_plugin_conflicts( $plugin_sections );
 	}
 
+	/**
+	 * Hook this function to show cached conflicts
+	 */
+	public static function hook_show_cached_conflicts() {
+		// The instance of itself
+		$instance = self::get_instance();
+
+		$instance->show_cached_conflicts();
+	}
+
 }
