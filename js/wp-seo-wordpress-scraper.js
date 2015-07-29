@@ -352,7 +352,7 @@ YoastSEO_WordPressScraper.prototype.snippetPreviewEventBinder = function() {
 		document.getElementById(elems[i]).addEventListener("keyup", this.refObj.snippetPreview.hideEditIcon);
 	}
 	var elems = ["title_container", "url_container", "meta_container"];
-	//when clicked on the
+	//when clicked on the edit-icon it focusses on the corresponding input-field. 
 	for (var i = 0; i < elems.length; i++) {
 		document.getElementById(elems[i]).addEventListener("click", this.refObj.snippetPreview.setFocus)
 	}
@@ -398,3 +398,4 @@ YoastSEO_WordPressScraper.prototype.updateSnippetValues = function( ev ) {
 	ev.currentTarget.refObj.source.getData();
 	ev.currentTarget.refObj.source.getAnalyzerInput();
 };
+
