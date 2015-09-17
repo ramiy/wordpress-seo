@@ -235,7 +235,7 @@ YoastSEO.WordPressScraper.prototype.snippetPreviewEventBinder = function( snippe
 YoastSEO.WordPressScraper.prototype.inputElementEventBinder = function() {
 	'use strict';
 
-	var elems = [ 'excerpt', 'content', 'editable-post-name', 'yoast_wpseo_focuskw' ];
+	var elems = [ 'excerpt', 'content', 'editable-post-name', 'yoast_wpseo_focuskw', 'title' ];
 	for ( var i = 0; i < elems.length; i++ ) {
 		var elem = document.getElementById( elems[ i ] );
 		if ( elem !== null ) {
