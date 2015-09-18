@@ -23,7 +23,7 @@ YoastSEO.WordPressScraper.prototype.getData = function() {
 		url: this.getDataFromInput( 'url' ),
 		excerpt: this.getDataFromInput( 'excerpt' ),
 		snippetTitle: this.getDataFromInput( 'snippetTitle' ),
-		snippetMeta: this.getDataFromInput( 'meta' ),
+		snippetMeta: this.getDataFromInput( 'snippetMeta' ),
 		snippetCite: this.getDataFromInput( 'cite' )
 	};
 };
@@ -118,12 +118,18 @@ YoastSEO.WordPressScraper.prototype.setRawData = function( value, type ) {
 	switch ( type ) {
 		case 'snippet_meta':
 			YoastSEO.app.rawData.snippetMeta = value;
+			if(YoastSEO.app.rawData.meta === '' ){
+				YoastSEO.app.rawData.meta = value;
+			}
 			break;
 		case 'snippet_cite':
 			YoastSEO.app.rawData.snippetCite = value;
 			break;
 		case 'snippet_title':
 			YoastSEO.app.rawData.snippetTitle = value;
+			if(YoastSEO.app.rawData.title === '' ){
+				YoastSEO.app.rawData.title = value;
+			}
 			break;
 		default:
 			break;
@@ -235,7 +241,7 @@ YoastSEO.WordPressScraper.prototype.snippetPreviewEventBinder = function( snippe
 YoastSEO.WordPressScraper.prototype.inputElementEventBinder = function() {
 	'use strict';
 
-	var elems = [ 'excerpt', 'content', 'editable-post-name', 'yoast_wpseo_focuskw', 'title' ];
+	var elems = [ 'excerpt', 'content', 'editable-post-name', 'yoast_wpseo_focuskw', 'title', 'snippet_meta', 'snippet_title' ];
 	for ( var i = 0; i < elems.length; i++ ) {
 		var elem = document.getElementById( elems[ i ] );
 		if ( elem !== null ) {
