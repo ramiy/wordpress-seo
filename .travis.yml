@@ -26,7 +26,7 @@ matrix:
     - php: 5.3
       env: WP_VERSION=4.3
     - php: 7.0
-      env: WP_VERSION=4.3
+      env: WP_VERSION=4.3 COVERAGE=1
     - php: hhvm
       env: WP_VERSION=4.3
 
@@ -37,7 +37,7 @@ cache:
 
 before_script:
 - phpenv local 5.6
-- composer selfupdate 1.0.0-alpha10 --no-interaction
+- composer selfupdate --no-interaction
 - composer install --no-interaction
 - composer config-yoastcs
 - phpenv local --unset
@@ -58,9 +58,11 @@ before_script:
 script:
 - if [[ "$PHPLINT" == "1" ]]; then find -L .  -path ./vendor -prune -o -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l; fi
 - if [[ "$PHPLINT" == "1" ]]; then vendor/bin/phpcs -v; fi
-- if [[ "$CHECKS" == "1" ]]; then npm install -g grunt-cli && npm install && grunt check:js; fi
-- phpunit -c phpunit.xml
+- if [[ "$CHECKS" == "1" ]]; then npm install -g grunt-cli && npm install --no-optional && grunt check:js; fi
+- if [[ "$COVERAGE" == "1" ]]; then phpunit -c phpunit.xml --coverage-clover build/logs/clover.xml; else phpunit -c phpunit.xml; fi
+- if [[ "$COVERAGE" == "1" ]]; then vendor/bin/test-reporter; fi
 
 notifications:
   slack:
     secure: W3StABr+AdcdQawTObK4nbsnn5nLrTTtZfVpD/GEN6gvSOQcykbGEC5+ceYg0jn5b4StDyCiTo5blEsrpVICFpYKc44+ogah+qaGRUfVRS/rpOvn4AueXTWn4JxhZzuxqKMiTmyW+MQG0uYM7sk7Q5S+15jj6ilkj4QATaBVNbY=
+  email: false
